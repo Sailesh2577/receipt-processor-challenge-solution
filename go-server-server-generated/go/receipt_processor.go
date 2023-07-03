@@ -18,60 +18,87 @@ func NewReceiptProcessor() *ReceiptProcessor {
 func (rp *ReceiptProcessor) ProcessReceipt(receipt *Receipt) int {
 	points := 0
 
-	// Rule 1: One point for every alphanumeric character in the retailer name
-	points += len(strings.ReplaceAll(receipt.Retailer, " ", ""))
-
-	// Rule 2: 50 points if the total is a round dollar amount with no cents
-	if isRoundDollarAmount(receipt.Total) {
-		points += 50
-	}
-
-	// Rule 3: 25 points if the total is a multiple of 0.25
-	if isMultipleOfQuarter(receipt.Total) {
-		points += 25
-	}
-
-	// Rule 4: 5 points for every two items on the receipt
-	points += len(receipt.Items) / 2 * 5
-
-	// Rule 5: If the trimmed length of the item description is a multiple of 3,
-	// multiply the price by 0.2 and round up to the nearest integer. The result is the number of points earned.
-	for _, item := range receipt.Items {
-		trimmedLength := len(strings.TrimSpace(item.ShortDescription))
-		if trimmedLength%3 == 0 {
-			price := parsePrice(item.Price)
-			points += int(price * 0.2)
-		}
-	}
-
-	// Rule 6: 6 points if the day in the purchase date is odd
-	purchaseDate, err := time.Parse("2006-01-02", receipt.PurchaseDate)
-	if err == nil && purchaseDate.Day()%2 != 0 {
-		points += 6
-	}
-
-	// Rule 7: 10 points if the time of purchase is after 2:00pm and before 4:00pm
-	purchaseTime, err := time.Parse("15:04", receipt.PurchaseTime)
-	if err == nil && purchaseTime.After(time.Date(0, 0, 0, 14, 0, 0, 0, time.UTC)) && purchaseTime.Before(time.Date(0, 0, 0, 16, 0, 0, 0, time.UTC)) {
-		points += 10
-	}
+	points += rp.calculateRetailerPoints(receipt.Retailer)
+	points += rp.calculateRoundDollarAmountPoints(receipt.Total)
+	points += rp.calculateMultipleOfQuarterPoints(receipt.Total)
+	points += rp.calculateItemPoints(receipt.Items)
+	points += rp.calculateTrimmedLengthPoints(receipt.Items)
+	points += rp.calculateOddDayPoints(receipt.PurchaseDate)
+	points += rp.calculatePurchaseTimePoints(receipt.PurchaseTime)
 
 	return points
 }
 
+// calculateRetailerPoints calculates the points earned based on the retailer name
+func (rp *ReceiptProcessor) calculateRetailerPoints(retailer string) int {
+	return len(strings.ReplaceAll(retailer, " ", ""))
+}
+
+// calculateRoundDollarAmountPoints calculates the points earned if the total is a round dollar amount
+func (rp *ReceiptProcessor) calculateRoundDollarAmountPoints(total string) int {
+	if rp.isRoundDollarAmount(total) {
+		return 50
+	}
+	return 0
+}
+
+// calculateMultipleOfQuarterPoints calculates the points earned if the total is a multiple of 0.25
+func (rp *ReceiptProcessor) calculateMultipleOfQuarterPoints(total string) int {
+	if rp.isMultipleOfQuarter(total) {
+		return 25
+	}
+	return 0
+}
+
+// calculateItemPoints calculates the points earned based on the number of items on the receipt
+func (rp *ReceiptProcessor) calculateItemPoints(items []Item) int {
+	return len(items) / 2 * 5
+}
+
+// calculateTrimmedLengthPoints calculates the points earned based on the trimmed length of item descriptions
+func (rp *ReceiptProcessor) calculateTrimmedLengthPoints(items []Item) int {
+	points := 0
+	for _, item := range items {
+		trimmedLength := len(strings.TrimSpace(item.ShortDescription))
+		if trimmedLength%3 == 0 {
+			price := rp.parsePrice(item.Price)
+			points += int(price * 0.2)
+		}
+	}
+	return points
+}
+
+// calculateOddDayPoints calculates the points earned if the day in the purchase date is odd
+func (rp *ReceiptProcessor) calculateOddDayPoints(purchaseDate string) int {
+	parsedDate, err := time.Parse("2006-01-02", purchaseDate)
+	if err == nil && parsedDate.Day()%2 != 0 {
+		return 6
+	}
+	return 0
+}
+
+// calculatePurchaseTimePoints calculates the points earned based on the time of purchase
+func (rp *ReceiptProcessor) calculatePurchaseTimePoints(purchaseTime string) int {
+	parsedTime, err := time.Parse("15:04", purchaseTime)
+	if err == nil && parsedTime.After(time.Date(0, 0, 0, 14, 0, 0, 0, time.UTC)) && parsedTime.Before(time.Date(0, 0, 0, 16, 0, 0, 0, time.UTC)) {
+		return 10
+	}
+	return 0
+}
+
 // isRoundDollarAmount checks if the total is a round dollar amount with no cents
-func isRoundDollarAmount(total string) bool {
+func (rp *ReceiptProcessor) isRoundDollarAmount(total string) bool {
 	return strings.HasSuffix(total, ".00")
 }
 
 // isMultipleOfQuarter checks if the total is a multiple of 0.25
-func isMultipleOfQuarter(total string) bool {
-	price := parsePrice(total)
+func (rp *ReceiptProcessor) isMultipleOfQuarter(total string) bool {
+	price := rp.parsePrice(total)
 	return int(price*100)%25 == 0
 }
 
 // parsePrice parses the price string and returns the price as a float64
-func parsePrice(price string) float64 {
+func (rp *ReceiptProcessor) parsePrice(price string) float64 {
 	price = strings.ReplaceAll(price, "$", "")
 	parsedPrice, _ := strconv.ParseFloat(price, 64)
 	return parsedPrice
