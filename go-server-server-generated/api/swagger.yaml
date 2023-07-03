@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: Receipt Processor
+  description: A simple receipt processor
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /receipts/process:
+    post:
+      summary: Submits a receipt for processing
+      description: Submits a receipt for processing
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Receipt'
+        required: true
+      responses:
+        "200":
+          description: Returns the ID assigned to the receipt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200'
+        "400":
+          description: The receipt is invalid
+  /receipts/{id}/points:
+    get:
+      summary: Returns the points awarded for the receipt
+      description: Returns the points awarded for the receipt
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the receipt
+        required: true
+        style: simple
+        explode: false
+        schema:
+          pattern: ^\S+$
+          type: string
+      responses:
+        "200":
+          description: The number of points awarded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/inline_response_200_1'
+        "404":
+          description: No receipt found for that id
+components:
+  schemas:
+    Receipt:
+      required:
+      - items
+      - purchaseDate
+      - purchaseTime
+      - retailer
+      - total
+      type: object
+      properties:
+        retailer:
+          pattern: ^\S+$
+          type: string
+          description: The name of the retailer or store the receipt is from.
+          example: Target
+        purchaseDate:
+          type: string
+          description: The date of the purchase printed on the receipt.
+          format: date
+          example: 2022-01-01
+        purchaseTime:
+          type: string
+          description: The time of the purchase printed on the receipt. 24-hour time
+            expected.
+          format: time
+          example: 13:01
+        items:
+          minItems: 1
+          type: array
+          items:
+            $ref: '#/components/schemas/Item'
+        total:
+          pattern: "^\\d+\\.\\d{2}$"
+          type: string
+          description: The total amount paid on the receipt.
+          example: "6.49"
+    Item:
+      required:
+      - price
+      - shortDescription
+      type: object
+      properties:
+        shortDescription:
+          pattern: "^[\\w\\s\\-]+$"
+          type: string
+          description: The Short Product Description for the item.
+          example: Mountain Dew 12PK
+        price:
+          pattern: "^\\d+\\.\\d{2}$"
+          type: string
+          description: The total price payed for this item.
+          example: "6.49"
+    inline_response_200:
+      required:
+      - id
+      type: object
+      properties:
+        id:
+          pattern: ^\S+$
+          type: string
+          example: adb6b560-0eef-42bc-9d16-df48f30e89b2
+      example:
+        id: adb6b560-0eef-42bc-9d16-df48f30e89b2
+    inline_response_200_1:
+      type: object
+      properties:
+        points:
+          type: integer
+          format: int64
+          example: 100
+      example:
+        points: 100
