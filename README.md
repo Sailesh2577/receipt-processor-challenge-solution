@@ -2,19 +2,19 @@
 
 ## main.go
 
-The main.go file contains the entry point of the server. It initializes the router from the generated code and starts the HTTP server on port 8080.
+The main.go file contains the entry point of the server. The main use is that it initializes the router from the generated code and then starts the HTTP server on port 8080.
 
 ## routers.go
 
-The routers.go file defines the routes and the router. It uses the Gorilla mux package to handle HTTP routing. The NewRouter function creates a new router and registers the routes defined in the routes variable. Each route has a name, HTTP method, URL pattern, and handler function.
+The routers.go file defines the routes and the router. It uses the Gorilla mux package to handle the HTTP routing. The NewRouter function in that creates a new router and it registers the routes defined in the routes variable. Each route has a name, HTTP method, URL pattern, and handler function.
 
 ## receipt_service.go
 
-The receipt_service.go file contains the handler functions for the /receipts/process and /receipts/{id}/points endpoints. The ProcessReceiptHandler function processes a receipt JSON payload, calculates the points earned based on the receipt data, generates a receipt ID, and returns the ID as a JSON response. The GetPointsHandler function retrieves the points awarded for a given receipt ID and returns the points as a JSON response.
+The main use of receipt_service.go file is that it contains the handler functions for the /receipts/process and /receipts/{id}/points endpoints. The ProcessReceiptHandler function processes a receipt JSON payload, calculates the points earned based on the receipt data, generates a receipt ID, and returns the ID as a JSON response. The GetPointsHandler function retrieves the points awarded for a given receipt ID and returns the points as a JSON response.
 
 ## receipt_processor.go
 
-The receipt_processor.go file defines the ReceiptProcessor struct and its methods. The ReceiptProcessor represents the receipt processing logic. The ProcessReceipt method processes a receipt and calculates the number of points earned based on the specified rules. It uses helper methods to calculate points for different aspects of the receipt, such as the retailer name, total amount, items, etc.
+The main use of receipt_processor.go file is that it defines the ReceiptProcessor struct and its methods. The ReceiptProcessor represents the receipt processing logic and the ProcessReceipt method processes a receipt and calculates the number of points earned based on the specified rules. It is using helper methods to calculate points for different aspects of the receipt, such as the retailer name, total amount, items, etc.
 
 ## receipt_processor_test.go
 
@@ -48,10 +48,10 @@ Step 3: Now build and run the server
   ./go-server-server-generated
 ```
 
-Step 4: The server has started. Now open another tab in the terminal. Navigate to go-server-server-generated folder again and run the following command(you will need to have installed curl. Click the link to install https://everything.curl.dev/get):
+Step 4: The server has started. Now open another tab in the terminal or open a new terminal. Navigate to go-server-server-generated folder like you did in Step 2 and run the following command(you will need to have curl installed for this. Click the link to install https://everything.curl.dev/get):
 
 ```bash
-  curl -X POST -H "Content-Type: application/json" -d '{                    ─╯
+  curl -X POST -H "Content-Type: application/json" -d '{
     "retailer": "Walgreens",
     "purchaseDate": "2022-01-02",
     "purchaseTime": "08:13",

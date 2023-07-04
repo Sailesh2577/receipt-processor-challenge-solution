@@ -91,7 +91,6 @@ func GetPointsHandler(w http.ResponseWriter, r *http.Request) {
 	receiptID = strings.TrimSuffix(receiptID, "/points")
 
 	// Retrieve the points awarded for the receipt ID (dummy implementation)
-	// Implement your logic to retrieve the points based on the receiptID
 	points := getPointsForReceiptID(receiptID)
 
 	// Create a JSON response containing the points
